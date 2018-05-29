@@ -1,0 +1,27 @@
+{
+  "name": "apifn",
+  "version": "1.0.0",
+  "description": "Call APIs beautifully as `api.$.users.getUserById(0)`",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:rdsedmundo/apifn.git"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "yarn test"
+  },
+  "author": "rdsedmundo",
+  "license": "ISC",
+  "dependencies": {
+    "humps": "^2.0.1",
+    "isomorphic-fetch": "^2.2.1",
+    "ramda": "^0.25.0"
+  },
+  "devDependencies": {
+    "@types/humps": "^1.1.2",
+    "@types/isomorphic-fetch": "^0.0.34",
+    "@types/ramda": "^0.25.30",
+    "typescript": "^2.8.3"
+  }
+}
