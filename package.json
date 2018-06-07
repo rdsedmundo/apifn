@@ -1,6 +1,6 @@
 {
   "name": "apifn",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Call APIs beautifully as `api.$.users.getUserById(0)`",
   "repository": {
     "type": "git",
@@ -20,13 +20,13 @@
   "dependencies": {
     "axios": "^0.18.0",
     "humps": "^2.0.1",
-    "ramda": "^0.25.0"
-  },
-  "devDependencies": {
+    "ramda": "^0.25.0",
     "@types/humps": "^1.1.2",
     "@types/isomorphic-fetch": "^0.0.34",
     "@types/node": "^10.3.1",
-    "@types/ramda": "^0.25.32",
+    "@types/ramda": "^0.25.32"
+  },
+  "devDependencies": {
     "cz-conventional-changelog": "^2.1.0",
     "typescript": "^2.8.3"
   }
