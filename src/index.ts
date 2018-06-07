@@ -1,29 +1,67 @@
-import fetch from 'isomorphic-fetch';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import {
   camelizeKeys,
   decamelizeKeys,
 } from 'humps';
 import {
-  forEach,
+  map,
   has,
+  merge,
+  pick,
 } from 'ramda';
+import { STATUS_CODES } from 'http';
 
 import Endpoint from './Endpoint';
-import { RequestInitWithUrl } from './types';
+import { Nullable } from 'types';
 
 class API {
-  // Endpoints available through the /endpoints folder will be registered here
-  private $: any = {};
+  private axios: AxiosInstance;
+  // Endpoints passed will be registered here
+  public $: any = {};
 
-  constructor(private baseUrl: string, endpoints: Endpoint[]) {
+  constructor(baseUrl: string, endpoints: Endpoint[]) {
+    this.axios = axios.create({
+      baseURL: baseUrl,
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true,
+    });
+
     this.registerEndPoints(endpoints);
   }
 
-  addEndpoint(instance: Endpoint) {
-    if (!(instance instanceof Endpoint)) {
-      throw new TypeError('Expected instance of Endpoint as parameter');
+  public intercept(
+    type: 'request',
+    onFulfilled: (value: AxiosRequestConfig) => AxiosRequestConfig | Promise<AxiosRequestConfig>,
+    onRejected?: (error: any) => any,
+  ): void;
+
+  public intercept(
+    type: 'response',
+    onFulfilled: (value: AxiosResponse) => AxiosResponse | Promise<AxiosResponse>,
+    onRejected?: (error: any) => any,
+  ): void;
+
+  public intercept(
+    type: any,
+    onFulfilled: any,
+    onRejected?: any,
+  ) {
+    if (type === 'request') {
+      this.axios.interceptors.request.use(
+        onFulfilled,
+        onRejected,
+      );
+
+      return;
     }
 
+    this.axios.interceptors.response.use(
+      onFulfilled,
+      onRejected,
+    );
+  }
+
+  addEndpoint(instance: Endpoint) {
     const groupName = instance.group();
     const endpointName = instance.name();
 
@@ -32,7 +70,6 @@ class API {
       this.$[groupName] = {};
     }
 
-    // If this endpoint already exists, i.e was registered before, we throw an error
     if (has(endpointName, this.$[groupName])) {
       throw new Error(`Endpoint ${groupName}.${endpointName} already defined.`);
     }
@@ -42,76 +79,55 @@ class API {
     this.$[groupName][endpointName] = instance.call.bind(this);
   }
 
-  private registerEndPoints(endpoints: Endpoint[]) {
-    forEach(
-      this.addEndpoint,
-      endpoints,
-    );
+  registerEndPoints(endpoints: Endpoint[]) {
+    map(this.addEndpoint, endpoints);
   }
 
-  static parseResponseBody(response: Response) {
-    const contentType = response.headers.get('Content-Type');
-
-    if (!response.ok) {
-      throw new Error(`${response.status.toString()} - ${response.statusText} - ${response.url}`);
-    }
+  static parseResponseBody(response: AxiosResponse) {
+    const contentType = response.headers['Content-Type'];
 
     if (contentType && contentType.indexOf('application/json') > -1) {
-      return response.json().then(r => camelizeKeys(r));
+      return camelizeKeys(response.data);
     }
 
-    return response.text();
+    return response.data;
   }
 
-  private request<T = any>(
+  request(
     {
       url,
       method,
       headers,
-      body,
-    }: RequestInitWithUrl,
+      data,
+    }: AxiosRequestConfig,
     convertBodyToSnakeCase = false,
-  ): Promise<T> {
-    let payload: any = body;
+  ) {
+    const options: AxiosRequestConfig = {
+      url,
+      method,
+      headers,
+    };
 
-    if (body && convertBodyToSnakeCase) {
-      payload = decamelizeKeys(body);
+    if (data) {
+      options.data = convertBodyToSnakeCase ? decamelizeKeys(data) : data;
     }
 
-    return fetch(
-      `${this.baseUrl}${url}`,
-      {
-        method,
-        body: payload ? JSON.stringify(payload) : undefined,
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          ...headers,
-        },
-      },
-    )
-      .then(API.parseResponseBody)
-      .then((response) => {
-        if (has('error', response)) {
-          throw new Error((response as any).error);
-        }
-
-        return response as T;
-      });
+    return this.axios.request(options)
+      .then(API.parseResponseBody);
   }
 
   // HTTP methods
-  get = (options: RequestInitWithUrl) => this.request({ method: 'GET', ...options });
-  delete = (options: RequestInitWithUrl) => this.request({ method: 'DELETE', ...options });
+  get = (options: AxiosRequestConfig) => this.request({ method: 'GET', ...options });
+  delete = (options: AxiosRequestConfig) => this.request({ method: 'DELETE', ...options });
 
-  post = (options: RequestInitWithUrl, body: any, convertBodyToSnakeCase: boolean) =>
-    this.request({ method: 'POST', body, ...options }, convertBodyToSnakeCase);
+  post = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
+    this.request({ method: 'POST', data, ...options }, !!convertBodyToSnakeCase);
 
-  put = (options: RequestInitWithUrl, body: any, convertBodyToSnakeCase: boolean) =>
-    this.request({ method: 'PUT', body, ...options }, convertBodyToSnakeCase);
+  put = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
+    this.request({ method: 'PUT', data, ...options }, !!convertBodyToSnakeCase);
 
-  patch = (options: RequestInitWithUrl, body: any, convertBodyToSnakeCase: boolean) =>
-    this.request({ method: 'PATCH', body, ...options }, convertBodyToSnakeCase);
+  patch = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
+    this.request({ method: 'PATCH', data, ...options }, !!convertBodyToSnakeCase);
 }
 
 export default API;

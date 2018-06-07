@@ -8,6 +8,7 @@
     "baseUrl": "./src",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "declaration": true,
     "outDir": "./dist"
   },
   "include": [

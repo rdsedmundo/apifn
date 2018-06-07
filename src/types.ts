@@ -1,3 +1,1 @@
-export interface RequestInitWithUrl extends RequestInit {
-  url: string;
-}
+export type Nullable<T> = T | null | undefined;
