@@ -15,9 +15,9 @@ import Endpoint from './Endpoint';
 import { Nullable } from 'types';
 
 class API {
-  private axios: AxiosInstance;
   // Endpoints passed will be registered here
   public $: any = {};
+  private axios: AxiosInstance;
 
   constructor(baseUrl: string, endpoints: Endpoint[]) {
     this.axios = axios.create({
@@ -27,6 +27,16 @@ class API {
     });
 
     this.registerEndPoints(endpoints);
+  }
+
+  static parseResponseBody(response: AxiosResponse) {
+    const contentType = response.headers['Content-Type'];
+
+    if (contentType && contentType.indexOf('application/json') > -1) {
+      return camelizeKeys(response.data);
+    }
+
+    return response.data;
   }
 
   public intercept(
@@ -61,7 +71,7 @@ class API {
     );
   }
 
-  addEndpoint(instance: Endpoint) {
+  public addEndpoint(instance: Endpoint) {
     const groupName = instance.group();
     const endpointName = instance.name();
 
@@ -79,18 +89,8 @@ class API {
     this.$[groupName][endpointName] = instance.call.bind(this);
   }
 
-  registerEndPoints(endpoints: Endpoint[]) {
-    map(this.addEndpoint, endpoints);
-  }
-
-  static parseResponseBody(response: AxiosResponse) {
-    const contentType = response.headers['Content-Type'];
-
-    if (contentType && contentType.indexOf('application/json') > -1) {
-      return camelizeKeys(response.data);
-    }
-
-    return response.data;
+  public registerEndPoints(endpoints: Endpoint[]) {
+    map(endpoint => this.addEndpoint(endpoint), endpoints);
   }
 
   public request(
