@@ -93,7 +93,7 @@ class API {
     return response.data;
   }
 
-  request(
+  public request(
     {
       url,
       method,
@@ -117,16 +117,16 @@ class API {
   }
 
   // HTTP methods
-  get = (options: AxiosRequestConfig) => this.request({ method: 'GET', ...options });
-  delete = (options: AxiosRequestConfig) => this.request({ method: 'DELETE', ...options });
+  public get = (options: AxiosRequestConfig) => this.request({ method: 'GET', ...options });
+  public delete = (options: AxiosRequestConfig) => this.request({ method: 'DELETE', ...options });
 
-  post = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
+  public post = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
     this.request({ method: 'POST', data, ...options }, !!convertBodyToSnakeCase);
 
-  put = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
+  public put = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
     this.request({ method: 'PUT', data, ...options }, !!convertBodyToSnakeCase);
 
-  patch = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
+  public patch = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
     this.request({ method: 'PATCH', data, ...options }, !!convertBodyToSnakeCase);
 }
 
