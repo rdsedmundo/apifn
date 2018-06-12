@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosPromise, AxiosResponse } from 'axios';
 import {
   camelizeKeys,
   decamelizeKeys,
@@ -29,14 +29,19 @@ class API {
     this.registerEndPoints(endpoints);
   }
 
-  static parseResponseBody(response: AxiosResponse) {
-    const contentType = response.headers['Content-Type'];
+  static interceptors = {
+    formatResponseToCamelCase(response: AxiosResponse) {
+      const contentType = response.headers['content-type'];
 
-    if (contentType && contentType.indexOf('application/json') > -1) {
-      return camelizeKeys(response.data);
-    }
+      if (contentType && contentType.indexOf('application/json') > -1) {
+        return merge(
+          response,
+          { data: camelizeKeys(response.data) },
+        );
+      }
 
-    return response.data;
+      return response;
+    },
   }
 
   public intercept(
@@ -112,8 +117,7 @@ class API {
       options.data = convertBodyToSnakeCase ? decamelizeKeys(data) : data;
     }
 
-    return this.axios.request(options)
-      .then(API.parseResponseBody);
+    return this.axios.request(options);
   }
 
   // HTTP methods
@@ -131,3 +135,4 @@ class API {
 }
 
 export default API;
+
