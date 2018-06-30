@@ -19,7 +19,7 @@ export default abstract class Endpoint {
    * this.get, this.post, this.put, this.patch, this.delete
    * will be available here for usage
   */
-  abstract call(): Promise<any>;
+  abstract call(...args: any[]): Promise<any>;
 
   public get: API['get'] = noop;
   public delete: API['delete'] = noop;

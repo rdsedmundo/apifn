@@ -124,15 +124,14 @@ class API {
   public get = (options: AxiosRequestConfig) => this.request({ method: 'GET', ...options });
   public delete = (options: AxiosRequestConfig) => this.request({ method: 'DELETE', ...options });
 
-  public post = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
-    this.request({ method: 'POST', data, ...options }, !!convertBodyToSnakeCase);
+  public post = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase = false) =>
+    this.request({ method: 'POST', data, ...options }, convertBodyToSnakeCase);
 
-  public put = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
+  public put = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase = false) =>
     this.request({ method: 'PUT', data, ...options }, !!convertBodyToSnakeCase);
 
-  public patch = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase: Nullable<boolean>) =>
+  public patch = (options: AxiosRequestConfig, data: any, convertBodyToSnakeCase = false) =>
     this.request({ method: 'PATCH', data, ...options }, !!convertBodyToSnakeCase);
 }
 
 export default API;
-
